@@ -36,6 +36,8 @@ print_disks() {
     # local disk_sectors_discarded=$(cat /proc/diskstats | grep -E "$disk_name " | awk '{print $17}')
     echo "Имя диска: $disk_name, Размер диска: $disk_size"
   done <<< $(lsblk | grep -E 'sd[a-z] ')
+  # Ограничение на имя дисков может быть слишком строгим.
+  # Например, на моём ноутбуке диск называется nvme0
 }
 
 print_load_average() {
@@ -99,6 +101,8 @@ print_ports() {
       echo "  $line"
     fi
   done <<< $(lsof -i -P -n)
+  # Эта команда требует привилегий root, можно было бы
+  # использовать netstat -na, он таких прав не требует
 }
 
 show_host() {
@@ -185,7 +189,10 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
-while true; do
+# Использование while true вызовет лишний проход после
+# обработки всех аргументов (если не предусмотрен exit).
+# Лучше завязаться на количество позиционных аргументов $#:
+while (($#)); do
   case "$1" in
     --host)
       show_host
